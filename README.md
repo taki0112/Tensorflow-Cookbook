@@ -1,7 +1,7 @@
 # Tensorflow-Cookbook
 
 <div align="center">
-  <img src="./assets/tf-cookbook.png"><br><br>
+  <img src="./assets/tf-cookbook.png" height = '300px'><br><br>
 </div>
 
 ---
