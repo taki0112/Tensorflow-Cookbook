@@ -3,7 +3,6 @@
 <div align="center">
   <img src="./assets/tf-cook.png" height = '300px'><br><br>
 </div>
-
 ---
 
 # [Web page](http://bit.ly/jhkim_tf_cookbook)
