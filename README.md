@@ -1,5 +1,3 @@
-# Tensorflow-Cookbook
-
 <div align="center">
   <img src="./assets/tf-cook.png" height = '300px'>
 </div>
