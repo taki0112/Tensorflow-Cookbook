@@ -1,8 +1,9 @@
 # Tensorflow-Cookbook
 
 <div align="center">
-  <img src="./assets/tf-cook.png" height = '300px'><br><br>
+  <img src="./assets/tf-cook.png" height = '300px'>
 </div>
+
 ---
 
 # [Web page](http://bit.ly/jhkim_tf_cookbook)
