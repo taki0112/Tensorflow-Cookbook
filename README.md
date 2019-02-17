@@ -219,6 +219,7 @@ loss = kl_loss(mean, logvar)
 
 ## Contributions
 Your pull requests and issues are always welcome.
+
 Also, write what you want to implement on the issue. I'll implement it.
 
 ## Author
