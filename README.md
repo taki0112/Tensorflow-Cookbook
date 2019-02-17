@@ -80,17 +80,25 @@ weight_regularizer_fully = tf.contrib.layers.l2_regularizer(0.0001)
 ```python
 x = conv(x, channels=64, kernel=3, stride=2, pad=1, pad_type='reflect', use_bias=True, sn=True, scope='conv')
 ```
+<div align="center">
+  <img src="https://github.com/vdumoulin/conv_arithmetic/raw/master/gif/full_padding_no_strides.gif" width = '300px'>
+</div>
 
 ### partial conv (NVIDIA [Partial Convolution](https://github.com/NVIDIA/partialconv))
 ```python
 x = partial_conv(x, channels=64, kernel=3, stride=2, use_bias=True, padding='SAME', sn=True, scope='partial_conv')
 ```
 
+![p_conv](https://github.com/taki0112/partial_conv-Tensorflow/raw/master/assets/partial_conv.png)
+![p_result](https://github.com/taki0112/partial_conv-Tensorflow/raw/master/assets/classification.png)
+
 ### dilated conv
 ```python
 x = dilate_conv(x, channels=64, kernel=3, rate=2, use_bias=True, padding='SAME', sn=True, scope='dilate_conv')
 ```
-
+<div align="center">
+  <img src="https://github.com/vdumoulin/conv_arithmetic/raw/master/gif/dilation.gif" width = '300px'>
+</div>
 ---
 
 ## Deconvolution
@@ -98,7 +106,9 @@ x = dilate_conv(x, channels=64, kernel=3, rate=2, use_bias=True, padding='SAME',
 ```python
 x = deconv(x, channels=64, kernel=3, stride=2, padding='SAME', use_bias=True, sn=True, scope='deconv')
 ```
-
+<div align="center">
+  <img src="https://github.com/vdumoulin/conv_arithmetic/raw/master/gif/full_padding_no_strides_transposed.gif" width = '300px'>
+</div>
 ---
 
 ## Fully-connected
