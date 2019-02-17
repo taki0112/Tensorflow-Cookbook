@@ -109,6 +109,7 @@ x = deconv(x, channels=64, kernel=3, stride=2, padding='SAME', use_bias=True, sn
 <div align="center">
   <img src="https://github.com/vdumoulin/conv_arithmetic/raw/master/gif/full_padding_no_strides_transposed.gif" width = '300px'>
 </div>
+
 ---
 
 ## Fully-connected
@@ -137,6 +138,9 @@ x = resblock_up(x, channels=64, is_training=is_training, use_bias=True, sn=True,
 ```
 * `down` ===> [height, width] -> [**height // 2, width // 2**]
 * `up` ===> [height, width] -> [**height \* 2, width \* 2**]
+<div align="center">
+  <img src="https://cdn-images-1.medium.com/max/1600/1*FqmD91PvbH7NKCnQWFJxvg.png" width = '300px'>
+</div>
 
 ### attention block
 ```python
@@ -147,6 +151,9 @@ x = squeeze_excitation(x, channels=64, ratio=16, use_bias=True, sn=True, scope='
 
 x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True, scope='convolution_block_attention')
 ```
+<div align="center">
+  <img src="https://github.com/taki0112/Self-Attention-GAN-Tensorflow/raw/master/assests/framework.PNG" width = '300px'>
+</div>
 
 ---
 
