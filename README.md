@@ -107,6 +107,7 @@ x = dilate_conv(x, channels=64, kernel=3, rate=2, use_bias=True, padding='SAME',
 <div align="center">
   <img src="https://github.com/vdumoulin/conv_arithmetic/raw/master/gif/dilation.gif" width = '300px'>
 </div>
+
 ---
 
 ## Deconvolution
@@ -159,14 +160,30 @@ x = squeeze_excitation(x, channels=64, ratio=16, use_bias=True, sn=True, scope='
 
 x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True, scope='convolution_block_attention')
 ```
+
 <div align="center">
   <img src="https://github.com/taki0112/Self-Attention-GAN-Tensorflow/raw/master/assests/framework.PNG">
+</div>
+
+---
+
+<div align="center">
+  <img src="https://github.com/hujie-frank/SENet/blob/master/figures/SE-Inception-module.jpg" width="420">
   <img src="https://github.com/hujie-frank/SENet/blob/master/figures/SE-Inception-module.jpg" width="420">
   <img src="https://github.com/hujie-frank/SENet/blob/master/figures/SE-ResNet-module.jpg"  width="420">
+</div>
+
+<div align="center">
+  <img src="https://github.com/hujie-frank/SENet/blob/master/figures/SE-ResNet-module.jpg"  width="420">
+</div>
+
+---
+
+
+<div align="center">
   <img src="https://bloglunit.files.wordpress.com/2018/08/screen-shot-2018-08-22-at-8-42-27-pm.png?w=2800">
   <img src="https://bloglunit.files.wordpress.com/2018/08/screen-shot-2018-08-22-at-8-47-09-pm.png?w=2800">
 </div>
-
 
 
 ---
