@@ -139,7 +139,7 @@ x = resblock_up(x, channels=64, is_training=is_training, use_bias=True, sn=True,
 * `down` ===> [height, width] -> [**height // 2, width // 2**]
 * `up` ===> [height, width] -> [**height \* 2, width \* 2**]
 <div align="center">
-  <img src="https://cdn-images-1.medium.com/max/1600/1*FqmD91PvbH7NKCnQWFJxvg.png" width = '300px'>
+  <img src="https://cdn-images-1.medium.com/max/1600/1*FqmD91PvbH7NKCnQWFJxvg.png">
 </div>
 
 ### attention block
@@ -152,8 +152,14 @@ x = squeeze_excitation(x, channels=64, ratio=16, use_bias=True, sn=True, scope='
 x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True, scope='convolution_block_attention')
 ```
 <div align="center">
-  <img src="https://github.com/taki0112/Self-Attention-GAN-Tensorflow/raw/master/assests/framework.PNG" width = '300px'>
+  <img src="https://github.com/taki0112/Self-Attention-GAN-Tensorflow/raw/master/assests/framework.PNG">
+  <img src="https://github.com/hujie-frank/SENet/blob/master/figures/SE-Inception-module.jpg" width="420">
+  <img src="https://github.com/hujie-frank/SENet/blob/master/figures/SE-ResNet-module.jpg"  width="420">
+  <img src="https://bloglunit.files.wordpress.com/2018/08/screen-shot-2018-08-22-at-8-42-27-pm.png?w=2800">
+  <img src="https://bloglunit.files.wordpress.com/2018/08/screen-shot-2018-08-22-at-8-47-09-pm.png?w=2800">
 </div>
+
+
 
 ---
 
