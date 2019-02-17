@@ -4,9 +4,14 @@
 
 
 # [Web page](http://bit.ly/jhkim_tf_cookbook)
+## Contributions
 In now, this repo contains general architectures and functions that are useful for the GAN.
 
 I will continue to add useful things to other areas.
+
+Also, your pull requests and issues are always welcome.
+
+And write what you want to implement on the issue. I'll implement it.
 
 # How to use
 ## Import
@@ -242,11 +247,6 @@ loss = kl_loss(mean, logvar)
 ```
 
 ---
-
-## Contributions
-Your pull requests and issues are always welcome.
-
-Also, write what you want to implement on the issue. I'll implement it.
 
 ## Author
 Junho Kim
