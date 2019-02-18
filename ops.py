@@ -314,7 +314,7 @@ def res_denseblock(x_init, channels, n_rdb=20, n_rdb_conv=6, use_bias=True, is_t
 
         """
         n_rdb = 20 ( RDB number )
-        n_rdb_bottle = 6 ( per RDB conv layer )
+        n_rdb_conv = 6 ( per RDB conv layer )
         """
 
         for k in range(n_rdb):
