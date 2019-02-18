@@ -58,15 +58,6 @@ logit = network(data_A)
   * 'zero' or 'reflect'
 * `sn`
   * use [spectral_normalization](https://arxiv.org/pdf/1802.05957.pdf) or not
-* `Ra`
-  * use [relativistic gan](https://arxiv.org/pdf/1807.00734.pdf) or not
-* `loss_func`
-  * gan
-  * lsgan
-  * hinge
-  * wgan
-  * wgan-gp
-  * dragan
 
 ## Caution
 * If you don't want to share variable, **set all scope names differently.**
@@ -284,6 +275,15 @@ loss = histogram_loss(x, y)
 d_loss = discriminator_loss(Ra=True, loss_func='wgan-gp', real=real_logit, fake=fake_logit)
 g_loss = generator_loss(Ra=True, loss_func='wgan_gp', real=real_logit, fake=fake_logit)
 ```
+* `Ra`
+  * use [relativistic gan](https://arxiv.org/pdf/1807.00734.pdf) or not
+* `loss_func`
+  * gan
+  * lsgan
+  * hinge
+  * wgan
+  * wgan-gp
+  * dragan
 * See [this](https://github.com/taki0112/BigGAN-Tensorflow/blob/master/BigGAN_512.py#L180) for how to use `gradient_penalty`
 
 ### kl-divergence (z ~ N(0, 1))
