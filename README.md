@@ -36,6 +36,12 @@ def network(x, is_training=True, reuse=False, scope="network"):
 ## Insert data to network using DatasetAPI
 ```python
 Image_Data_Class = ImageData(img_size, img_ch, augment_flag)
+
+trainA_dataset = ['./dataset/cat/trainA/a.jpg', 
+                  './dataset/cat/trainA/b.png', 
+                  './dataset/cat/trainA/c.jpeg', 
+                  ...]
+trainA = tf.data.Dataset.from_tensor_slices(trainA_dataset)
 trainA = trainA.map(Image_Data_Class.image_processing, num_parallel_calls=16)
 trainA = trainA.shuffle(buffer_size=10000).prefetch(buffer_size=batch_size).batch(batch_size).repeat()
 
