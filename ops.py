@@ -810,6 +810,13 @@ def generator_loss(Ra, loss_func, real, fake):
 
     return loss
 
+def vdb_loss(mu, logvar, i_c=0.1) :
+    # variational discriminator bottleneck loss
+    kl_divergence = 0.5 * tf.reduce_sum(tf.square(mu) + tf.exp(logvar) - 1 - logvar, axis=-1)
+
+    loss = tf.reduce_mean(kl_divergence - i_c)
+
+    return loss
 
 ##################################################################################
 # KL-Divergence Loss Function
