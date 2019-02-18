@@ -16,10 +16,10 @@ And write what you want to implement on the issue. I'll implement it.
 # How to use
 ## Import
 * `ops.py`
-  * operations
+  * **operations**
   * from ops import *
 * `utils.py`
-  * image processing
+  * **image processing**
   * from utils import *
   
 ## Network template
