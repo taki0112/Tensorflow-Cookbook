@@ -5,7 +5,7 @@
 
 # [Web page](http://bit.ly/jhkim_tf_cookbook)
 ## Contributions
-In now, this repo contains general architectures and functions that are useful for the GAN.
+In now, this repo contains general architectures and functions that are useful for the GAN and classificstion.
 
 I will continue to add useful things to other areas.
 
