@@ -175,8 +175,8 @@ x = res_denseblock(x, channels=64, n_rdb=20, n_rdb_conv=6, is_training=is_traini
 
 <div align="center">
   <img src=./assets/compare.png height = '400px'>
-  <img src=./assets/rdn.png height = '300px' width='700px'>
-  <img src=./assets/rdb.png height = '300px' width='700px'>
+  <img src=./assets/rdn.png height = '350px' width='800px'>
+  <img src=./assets/rdb.png height = '250px' width='650px'>
 </div>
 
 ### attention block
