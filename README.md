@@ -287,6 +287,11 @@ g_loss = generator_loss(Ra=True, loss_func='wgan_gp', real=real_logit, fake=fake
   * dragan
 * See [this](https://github.com/taki0112/BigGAN-Tensorflow/blob/master/BigGAN_512.py#L180) for how to use `gradient_penalty`
 
+### vdb loss ([Variational Discriminator Bottleneck loss](https://arxiv.org/abs/1810.00821)
+```python
+d_bottleneck_loss = vdb_loss(real_mu, real_logvar, i_c)+ vdb_loss(fake_mu, fake_logvar, i_c)
+```
+
 ### kl-divergence (z ~ N(0, 1))
 ```python
 loss = kl_loss(mean, logvar)
