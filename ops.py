@@ -272,6 +272,93 @@ def resblock_down(x_init, channels, use_bias=True, is_training=True, sn=False, s
 
     return relu(x + x_init)
 
+def denseblock(x_init, channels, n_db=6, use_bias=True, is_training=True, sn=False, scope='denseblock') :
+    with tf.variable_scope(scope) :
+        layers = []
+        layers.append(x_init)
+
+        with tf.variable_scope('bottle_neck_0') :
+            x = conv(x_init, 4 * channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_0')
+            x = batch_norm(x, is_training, scope='batch_norm_0')
+            x = relu(x)
+
+            x = conv(x, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn, scope='conv_1')
+            x = batch_norm(x, is_training, scope='batch_norm_1')
+            x = relu(x)
+
+            layers.append(x)
+
+        for i in range(1, n_db) :
+            with tf.variable_scope('bottle_neck_' + str(i)) :
+                x = tf.concat(layers, axis=-1)
+
+                x = conv(x, 4 * channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_0')
+                x = batch_norm(x, is_training, scope='batch_norm_0')
+                x = relu(x)
+
+                x = conv(x, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn, scope='conv_1')
+                x = batch_norm(x, is_training, scope='batch_norm_1')
+                x = relu(x)
+
+                layers.append(x)
+
+        x = tf.concat(layers, axis=-1)
+
+        return x
+
+
+def res_denseblock(x_init, channels, n_rdb=20, n_rdb_conv=6, use_bias=True, is_training=True, sn=False, scope='res_denseblock'):
+    with tf.variable_scope(scope):
+        RDBs = []
+        x_input = x_init
+
+        """
+        n_rdb = 20 ( RDB number )
+        n_rdb_bottle = 6 ( per RDB conv layer )
+        """
+
+        for k in range(n_rdb):
+            with tf.variable_scope('RDB_' + str(k)):
+                layers = []
+                layers.append(x_init)
+
+                x = conv(x_init, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn, scope='conv_0')
+                x = batch_norm(x, is_training, scope='batch_norm_0')
+                x = relu(x)
+
+                layers.append(x)
+
+                for i in range(1, n_rdb_conv):
+                    x = tf.concat(layers, axis=-1)
+
+                    x = conv(x, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn, scope='conv_' + str(i))
+                    x = batch_norm(x, is_training, scope='batch_norm_' + str(i))
+                    x = relu(x)
+
+                    layers.append(x)
+
+                # Local feature fusion
+                x = tf.concat(layers, axis=-1)
+                x = conv(x, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_last')
+
+                # Local residual learning
+                x = x_init + x
+
+                RDBs.append(x)
+                x_init = x
+
+        with tf.variable_scope('GFF_1x1'):
+            x = tf.concat(RDBs, axis=-1)
+            x = conv(x, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv')
+
+        with tf.variable_scope('GFF_3x3'):
+            x = conv(x, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn, scope='conv')
+
+
+        # Global residual learning
+        x = x_input + x
+
+        return x
 
 def self_attention(x, channels, use_bias=True, sn=False, scope='self_attention'):
     with tf.variable_scope(scope):
