@@ -151,6 +151,28 @@ x = resblock_up(x, channels=64, is_training=is_training, use_bias=True, sn=True,
   <img src="https://cdn-images-1.medium.com/max/1600/1*FqmD91PvbH7NKCnQWFJxvg.png">
 </div>
 
+### dense block
+```python
+x = denseblock(x, channels=64, n_db=6, is_training=is_training, use_bias=True, sn=True, scope='denseblock')
+```
+* `n_db` ===> The number of dense-block
+<div align="center">
+  <img src="https://github.com/taki0112/Densenet-Tensorflow/raw/master/assests/Denseblock.JPG" height = '400px'>
+</div>
+
+### residual-dense block
+```python
+x = res_denseblock(x, channels=64, n_rdb=20, n_rdb_conv=6, is_training=is_training, use_bias=True, sn=True, scope='res_denseblock')
+```
+* `n_rdb` ===> The number of RDB
+* `n_rdb_conv` ===> per RDB conv layer
+
+<div align="center">
+  <img src=./assets/compare.png height = '400px'>
+  <img src=./assets/rdn.png height = '300px' width='700px'>
+  <img src=./assets/rdb.png height = '300px' width='700px'>
+</div>
+
 ### attention block
 ```python
 x = self_attention(x, channels=64, use_bias=True, sn=True, scope='self_attention')
@@ -186,8 +208,8 @@ x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True
 ## Normalization
 ```python
 x = batch_norm(x, is_training=is_training, scope='batch_norm')
-x = instance_norm(x, scope='instance_norm')
 x = layer_norm(x, scope='layer_norm')
+x = instance_norm(x, scope='instance_norm')
 x = group_norm(x, groups=32, scope='group_norm')
 
 x = pixel_norm(x)
