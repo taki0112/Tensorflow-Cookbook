@@ -47,6 +47,7 @@ trainA = trainA.shuffle(buffer_size=10000).prefetch(buffer_size=batch_size).batc
 
 trainA_iterator = trainA.make_one_shot_iterator()
 data_A = trainA_iterator.get_next()
+
 logit = network(data_A)
 ```
 * See [this](https://github.com/taki0112/Tensorflow-DatasetAPI) for more information.
