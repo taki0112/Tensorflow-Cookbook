@@ -103,3 +103,135 @@ def orthogonal_regularizer_fully(scale) :
         return scale * ortho_loss
 
     return ortho_reg_fully
+
+def tf_rgb_to_gray(x) :
+    x = (x + 1.0) * 0.5
+    x = tf.image.rgb_to_grayscale(x)
+
+    x = (x * 2) - 1.0
+
+    return x
+
+def RGB2LAB(srgb):
+    srgb = inverse_transform(srgb)
+
+    lab = rgb_to_lab(srgb)
+    l, a, b = preprocess_lab(lab)
+
+    l = tf.expand_dims(l, axis=-1)
+    a = tf.expand_dims(a, axis=-1)
+    b = tf.expand_dims(b, axis=-1)
+
+    x = tf.concat([l, a, b], axis=-1)
+
+    return x
+
+def LAB2RGB(lab) :
+    lab = inverse_transform(lab)
+
+    rgb = lab_to_rgb(lab)
+    rgb = tf.clip_by_value(rgb, 0, 1)
+
+    # r, g, b = tf.unstack(rgb, axis=-1)
+    # rgb = tf.concat([r,g,b], axis=-1)
+
+    x = (rgb * 2) - 1.0
+
+    return x
+
+def rgb_to_lab(srgb):
+    with tf.name_scope('rgb_to_lab'):
+        srgb_pixels = tf.reshape(srgb, [-1, 3])
+        with tf.name_scope('srgb_to_xyz'):
+            linear_mask = tf.cast(srgb_pixels <= 0.04045, dtype=tf.float32)
+            exponential_mask = tf.cast(srgb_pixels > 0.04045, dtype=tf.float32)
+            rgb_pixels = (srgb_pixels / 12.92 * linear_mask) + (((srgb_pixels + 0.055) / 1.055) ** 2.4) * exponential_mask
+            rgb_to_xyz = tf.constant([
+                #    X        Y          Z
+                [0.412453, 0.212671, 0.019334], # R
+                [0.357580, 0.715160, 0.119193], # G
+                [0.180423, 0.072169, 0.950227], # B
+            ])
+            xyz_pixels = tf.matmul(rgb_pixels, rgb_to_xyz)
+
+        with tf.name_scope('xyz_to_cielab'):
+            # convert to fx = f(X/Xn), fy = f(Y/Yn), fz = f(Z/Zn)
+
+            # normalize for D65 white point
+            xyz_normalized_pixels = tf.multiply(xyz_pixels, [1/0.950456, 1.0, 1/1.088754])
+
+            epsilon = 6/29
+            linear_mask = tf.cast(xyz_normalized_pixels <= (epsilon**3), dtype=tf.float32)
+            exponential_mask = tf.cast(xyz_normalized_pixels > (epsilon**3), dtype=tf.float32)
+            fxfyfz_pixels = (xyz_normalized_pixels / (3 * epsilon**2) + 4/29) * linear_mask + (xyz_normalized_pixels ** (1/3)) * exponential_mask
+
+            # convert to lab
+            fxfyfz_to_lab = tf.constant([
+                #  l       a       b
+                [  0.0,  500.0,    0.0], # fx
+                [116.0, -500.0,  200.0], # fy
+                [  0.0,    0.0, -200.0], # fz
+            ])
+            lab_pixels = tf.matmul(fxfyfz_pixels, fxfyfz_to_lab) + tf.constant([-16.0, 0.0, 0.0])
+
+        return tf.reshape(lab_pixels, tf.shape(srgb))
+
+
+def lab_to_rgb(lab):
+    with tf.name_scope('lab_to_rgb'):
+        lab_pixels = tf.reshape(lab, [-1, 3])
+        with tf.name_scope('cielab_to_xyz'):
+            # convert to fxfyfz
+            lab_to_fxfyfz = tf.constant([
+                #   fx      fy        fz
+                [1/116.0, 1/116.0,  1/116.0], # l
+                [1/500.0,     0.0,      0.0], # a
+                [    0.0,     0.0, -1/200.0], # b
+            ])
+            fxfyfz_pixels = tf.matmul(lab_pixels + tf.constant([16.0, 0.0, 0.0]), lab_to_fxfyfz)
+
+            # convert to xyz
+            epsilon = 6/29
+            linear_mask = tf.cast(fxfyfz_pixels <= epsilon, dtype=tf.float32)
+            exponential_mask = tf.cast(fxfyfz_pixels > epsilon, dtype=tf.float32)
+            xyz_pixels = (3 * epsilon**2 * (fxfyfz_pixels - 4/29)) * linear_mask + (fxfyfz_pixels ** 3) * exponential_mask
+
+            # denormalize for D65 white point
+            xyz_pixels = tf.multiply(xyz_pixels, [0.950456, 1.0, 1.088754])
+
+        with tf.name_scope('xyz_to_srgb'):
+            xyz_to_rgb = tf.constant([
+                #     r           g          b
+                [ 3.2404542, -0.9692660,  0.0556434], # x
+                [-1.5371385,  1.8760108, -0.2040259], # y
+                [-0.4985314,  0.0415560,  1.0572252], # z
+            ])
+            rgb_pixels = tf.matmul(xyz_pixels, xyz_to_rgb)
+            # avoid a slightly negative number messing up the conversion
+            rgb_pixels = tf.clip_by_value(rgb_pixels, 0.0, 1.0)
+            linear_mask = tf.cast(rgb_pixels <= 0.0031308, dtype=tf.float32)
+            exponential_mask = tf.cast(rgb_pixels > 0.0031308, dtype=tf.float32)
+            srgb_pixels = (rgb_pixels * 12.92 * linear_mask) + ((rgb_pixels ** (1/2.4) * 1.055) - 0.055) * exponential_mask
+
+        return tf.reshape(srgb_pixels, tf.shape(lab))
+
+def preprocess_lab(lab):
+    with tf.name_scope('preprocess_lab'):
+        L_chan, a_chan, b_chan = tf.unstack(lab, axis=-1)
+        # L_chan: black and white with input range [0, 100]
+        # a_chan/b_chan: color channels with input range [-128, 127]
+        # [0, 100] => [-1, 1],  ~[-128, 127] => [-1, 1]
+
+        L_chan = L_chan * 255.0 / 100.0
+        a_chan = a_chan + 128
+        b_chan = b_chan + 128
+
+        L_chan /= 255.0
+        a_chan /= 255.0
+        b_chan /= 255.0
+
+        L_chan = (L_chan - 0.5) / 0.5
+        a_chan = (a_chan - 0.5) / 0.5
+        b_chan = (b_chan - 0.5) / 0.5
+
+        return [L_chan, a_chan, b_chan]
