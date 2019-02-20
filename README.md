@@ -216,10 +216,11 @@ x = group_norm(x, groups=32, scope='group_norm')
 x = pixel_norm(x)
 
 x = batch_instance_norm(x, scope='batch_instance_norm')
+x = switch_norm(x, scope='switch_norm')
 
 x = condition_batch_norm(x, z, is_training=is_training, scope='condition_batch_norm'):
 
-x = adaptive_instance_norm(x, gamma, beta):
+x = adaptive_instance_norm(x, gamma, beta)
 
 ```
 * See [this](https://github.com/taki0112/BigGAN-Tensorflow) for how to use `condition_batch_norm`
@@ -229,6 +230,10 @@ x = adaptive_instance_norm(x, gamma, beta):
   <img src="https://github.com/taki0112/Group_Normalization-Tensorflow/raw/master/assests/norm.png">
 </div>
 
+
+<div align="center">
+  <img src="https://github.com/taki0112/Switchable_Normalization-Tensorflow/raw/master/assests/teaser.png">
+</div>
 
 ---
 
