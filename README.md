@@ -282,7 +282,7 @@ loss = histogram_loss(x, y)
 ### gan loss
 ```python
 d_loss = discriminator_loss(Ra=True, loss_func='wgan-gp', real=real_logit, fake=fake_logit)
-g_loss = generator_loss(Ra=True, loss_func='wgan_gp', real=real_logit, fake=fake_logit)
+g_loss = generator_loss(Ra=True, loss_func='wgan-gp', real=real_logit, fake=fake_logit)
 ```
 * `Ra`
   * use [relativistic gan](https://arxiv.org/pdf/1807.00734.pdf) or not
