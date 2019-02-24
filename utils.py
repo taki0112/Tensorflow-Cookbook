@@ -1,7 +1,8 @@
 import tensorflow as tf
 from scipy import misc
 import numpy as np
-import random
+import random, os
+from tensorflow.contrib import slim
 
 class ImageData:
 
@@ -235,3 +236,15 @@ def preprocess_lab(lab):
         b_chan = (b_chan - 0.5) / 0.5
 
         return [L_chan, a_chan, b_chan]
+
+def show_all_variables():
+    model_vars = tf.trainable_variables()
+    slim.model_analyzer.analyze_vars(model_vars, print_info=True)
+
+def check_folder(log_dir):
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    return log_dir
+
+def str2bool(x):
+    return x.lower() in ('true')
