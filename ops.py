@@ -734,6 +734,23 @@ def normalization(x):
     x = (x - tf.reduce_min(x)) / (tf.reduce_max(x) - tf.reduce_min(x))
     return x
 
+def gram_matrix(x) :
+    ch = x.shape[-1]
+
+    x = tf.reshape(x, shape=[-1, ch])
+
+    x = tf.matmul(tf.transpose(x), x)
+
+    return x
+
+def gram_style_loss(x, y) :
+    x = gram_matrix(x)
+    y = gram_matrix(y)
+
+    loss = L2_loss(x, y)
+
+    return loss
+
 
 ##################################################################################
 # GAN Loss Function
