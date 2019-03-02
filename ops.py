@@ -470,10 +470,10 @@ def batch_norm(x, is_training=False, scope='batch_norm'):
 
     return tf.contrib.layers.batch_norm(x,
                                         decay=0.9, epsilon=1e-05,
-                                        center=True, scale=True, renorm=True, updates_collections=None,
+                                        center=True, scale=True, updates_collections=None,
                                         is_training=is_training, scope=scope)
 
-    # return tf.layers.batch_normalization(x, momentum=0.9, epsilon=1e-05, center=True, scale=True, renorm=True, training=is_training, name=scope)
+    # return tf.layers.batch_normalization(x, momentum=0.9, epsilon=1e-05, center=True, scale=True, training=is_training, name=scope)
 
 
 def instance_norm(x, scope='instance_norm'):
