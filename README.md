@@ -293,10 +293,13 @@ g_loss = generator_loss(Ra=True, loss_func='wgan-gp', real=real_logit, fake=fake
   * gan
   * lsgan
   * hinge
-  * wgan
   * wgan-gp
   * dragan
 * See [this](https://github.com/taki0112/BigGAN-Tensorflow/blob/master/BigGAN_512.py#L180) for how to use `gradient_penalty`
+
+<div align="center">
+  <img src=./assets/relativistic.png>
+</div>
 
 ### [vdb loss](https://arxiv.org/abs/1810.00821)
 ```python
