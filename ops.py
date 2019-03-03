@@ -178,7 +178,7 @@ def conv_pixel_shuffle_down(x, scale_factor=2, use_bias=True, sn=False, scope='p
     return x
 
 
-def fully_conneted(x, units, use_bias=True, sn=False, scope='linear'):
+def fully_connected(x, units, use_bias=True, sn=False, scope='linear'):
     with tf.variable_scope(scope):
         x = flatten(x)
         shape = x.get_shape().as_list()
@@ -409,9 +409,9 @@ def squeeze_excitation(x, channels, ratio=16, use_bias=True, sn=False, scope='se
     with tf.variable_scope(scope):
         squeeze = global_avg_pooling(x)
 
-        excitation = fully_conneted(squeeze, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
+        excitation = fully_connected(squeeze, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
         excitation = relu(excitation)
-        excitation = fully_conneted(excitation, units=channels, use_bias=use_bias, sn=sn, scope='fc2')
+        excitation = fully_connected(excitation, units=channels, use_bias=use_bias, sn=sn, scope='fc2')
         excitation = sigmoid(excitation)
 
         excitation = tf.reshape(excitation, [-1, 1, 1, channels])
@@ -425,15 +425,15 @@ def convolution_block_attention(x, channels, ratio=16, use_bias=True, sn=False, 
     with tf.variable_scope(scope):
         with tf.variable_scope('channel_attention'):
             x_gap = global_avg_pooling(x)
-            x_gap = fully_conneted(x_gap, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
+            x_gap = fully_connected(x_gap, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
             x_gap = relu(x_gap)
-            x_gap = fully_conneted(x_gap, units=channels, use_bias=use_bias, sn=sn, scope='fc2')
+            x_gap = fully_connected(x_gap, units=channels, use_bias=use_bias, sn=sn, scope='fc2')
 
         with tf.variable_scope('channel_attention', reuse=True):
             x_gmp = global_max_pooling(x)
-            x_gmp = fully_conneted(x_gmp, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
+            x_gmp = fully_connected(x_gmp, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
             x_gmp = relu(x_gmp)
-            x_gmp = fully_conneted(x_gmp, units=channels, use_bias=use_bias, sn=sn, scope='fc2')
+            x_gmp = fully_connected(x_gmp, units=channels, use_bias=use_bias, sn=sn, scope='fc2')
 
             scale = tf.reshape(x_gap + x_gmp, [-1, 1, 1, channels])
             scale = sigmoid(scale)
@@ -552,8 +552,8 @@ def condition_batch_norm(x, z, is_training=True, scope='batch_norm'):
         test_var = tf.get_variable("pop_var", shape=[c], dtype=tf.float32, initializer=tf.constant_initializer(1.0),
                                    trainable=False)
 
-        beta = fully_conneted(z, units=c, scope='beta')
-        gamma = fully_conneted(z, units=c, scope='gamma')
+        beta = fully_connected(z, units=c, scope='beta')
+        gamma = fully_connected(z, units=c, scope='gamma')
 
         beta = tf.reshape(beta, shape=[-1, 1, 1, c])
         gamma = tf.reshape(gamma, shape=[-1, 1, 1, c])
