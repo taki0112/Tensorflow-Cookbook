@@ -124,6 +124,10 @@ x = deconv(x, channels=64, kernel=3, stride=1, padding='SAME', use_bias=True, sn
 x = fully_conneted(x, units=64, use_bias=True, sn=True, scope='fully_connected')
 ```
 
+<div align="center">
+  <img src="https://stanford.edu/~shervine/images/fully-connected.png">
+</div>
+
 ---
 
 ## Pixel shuffle
