@@ -121,7 +121,7 @@ x = deconv(x, channels=64, kernel=3, stride=1, padding='SAME', use_bias=True, sn
 
 ## Fully-connected
 ```python
-x = fully_conneted(x, units=64, use_bias=True, sn=True, scope='fully_connected')
+x = fully_connected(x, units=64, use_bias=True, sn=True, scope='fully_connected')
 ```
 
 <div align="center">
