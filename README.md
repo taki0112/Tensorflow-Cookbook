@@ -248,6 +248,7 @@ x = lrelu(x, alpha=0.2)
 x = tanh(x)
 x = sigmoid(x)
 x = swish(x)
+x = elu(x)
 ```
 
 ---
