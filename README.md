@@ -273,6 +273,8 @@ x = hw_flatten(x)
 ### classification loss
 ```python
 loss, accuracy = classification_loss(logit, label)
+
+loss = dice_loss(n_classes=10, logit, label)
 ```
 
 ### pixel loss
