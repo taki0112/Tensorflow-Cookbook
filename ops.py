@@ -754,6 +754,39 @@ def gram_style_loss(x, y) :
 
     return loss
 
+# https://github.com/keras-team/keras/issues/9395
+def dice_loss(n_classes, labels, logits):
+    """
+    :param n_classes: number of classes
+    :param labels: [batch_size, m, n, 1] int32, class label
+    :param logits: [batch_size, m, n, n_classes] float32, output logits
+    :return:
+    """
+    smooth = 1e-7
+    dtype = tf.float32
+
+    # alpha=beta=0.5 : dice coefficient
+    # alpha=beta=1   : tanimoto coefficient (also known as jaccard)
+    # alpha+beta=1   : produces set of F*-scores
+    alpha, beta = 0.5, 0.5
+
+    # make onehot label [batch_size, m, n, n_classes]
+    # tf.one_hot() will ignore (creates zero vector) labels larger than n_class and less then 0
+    onehot_labels = tf.one_hot(tf.squeeze(labels, axis=-1), depth=n_classes, dtype=dtype)
+
+    ones = tf.ones_like(onehot_labels, dtype=dtype)
+    predicted = tf.nn.softmax(logits)
+    p0 = predicted
+    p1 = ones - predicted
+    g0 = onehot_labels
+    g1 = ones - onehot_labels
+
+    num = tf.reduce_sum(p0 * g0, axis=[0, 1, 2])
+    den = num + alpha * tf.reduce_sum(p0 * g1, axis=[0, 1, 2]) + beta * tf.reduce_sum(p1 * g0, axis=[0, 1, 2])
+
+    loss = tf.cast(n_classes, dtype=dtype) - tf.reduce_sum((num + smooth) / (den + smooth))
+    return loss
+
 
 ##################################################################################
 # GAN Loss Function
