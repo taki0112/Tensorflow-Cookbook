@@ -754,14 +754,16 @@ def gram_style_loss(x, y) :
 
     return loss
 
-# https://github.com/keras-team/keras/issues/9395
-def dice_loss(n_classes, labels, logits):
+def dice_loss(n_classes, logits, labels):
     """
     :param n_classes: number of classes
     :param labels: [batch_size, m, n, 1] int32, class label
     :param logits: [batch_size, m, n, n_classes] float32, output logits
     :return:
     """
+    
+    # https://github.com/keras-team/keras/issues/9395
+    
     smooth = 1e-7
     dtype = tf.float32
 
