@@ -757,8 +757,8 @@ def gram_style_loss(x, y) :
 def dice_loss(n_classes, logits, labels):
     """
     :param n_classes: number of classes
-    :param labels: [batch_size, m, n, 1] int32, class label
     :param logits: [batch_size, m, n, n_classes] float32, output logits
+    :param labels: [batch_size, m, n, 1] int32, class label
     :return:
     """
     
