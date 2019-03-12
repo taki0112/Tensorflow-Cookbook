@@ -754,6 +754,14 @@ def gram_style_loss(x, y) :
 
     return loss
 
+def color_consistency_loss(x, y) :
+    x_mu, x_var = tf.nn.moments(x, axes=[1, 2], keep_dims=True)
+    y_mu, y_var = tf.nn.moments(y, axes=[1, 2], keep_dims=True)
+
+    loss = L2_loss(x_mu, y_mu) + 5.0 * L2_loss(x_var, y_var)
+
+    return loss
+
 def dice_loss(n_classes, logits, labels):
     """
     :param n_classes: number of classes
