@@ -285,9 +285,12 @@ loss = huber_loss(x, y)
 loss = histogram_loss(x, y)
 
 loss = gram_style_loss(x, y)
+
+loss = color_consistency_loss(x, y)
 ```
 * `histogram_loss` means the difference in the color distribution of the image pixel values.
 * `gram_style_loss` means the difference between the styles using gram matrix.
+* `color_consistency_loss` means the color difference between the generated image and the input image.
 
 ### gan loss
 ```python
