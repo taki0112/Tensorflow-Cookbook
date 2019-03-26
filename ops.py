@@ -747,10 +747,15 @@ def gram_matrix(x) :
     return x
 
 def gram_style_loss(x, y) :
+    _, height, width, channels = x.get_shape().as_list()
+
     x = gram_matrix(x)
     y = gram_matrix(y)
 
-    loss = L2_loss(x, y)
+    # loss = L2_loss(x, y) # simple version
+
+    # Original eqn as a constant to divide i.e 1/(4. * (channels ** 2) * (width * height) ** 2)
+    loss = tf.reduce_mean(tf.square(x - y)) / (channels ** 2 * width * height)  # (4.0 * (channels ** 2) * (width * height) ** 2)
 
     return loss
 
