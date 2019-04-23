@@ -705,6 +705,20 @@ def L2_loss(x, y):
 def huber_loss(x, y):
     return tf.losses.huber_loss(x, y)
 
+def regularization_loss(scope_name) :
+    """
+    If you want to use "Regularization"
+    g_loss += regularization('generator')
+    d_loss += regularization('discriminator')
+    """
+    collection_regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+
+    loss = []
+    for item in collection_regularization :
+        if scope_name in item.name :
+            loss.append(item)
+
+    return tf.reduce_sum(loss)
 
 def histogram_loss(x, y):
     histogram_x = get_histogram(x)
