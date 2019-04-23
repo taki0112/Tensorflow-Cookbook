@@ -283,6 +283,8 @@ g_reg_loss = regularization_loss('generator')
 d_reg_loss = regularization_loss('discriminator')
 ```
 
+* If you want to use `regularizer`, then you should write it
+
 ### pixel loss
 ```python
 loss = L1_loss(x, y)
