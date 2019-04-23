@@ -277,6 +277,12 @@ loss, accuracy = classification_loss(logit, label)
 loss = dice_loss(n_classes=10, logit, label)
 ```
 
+### regularization loss
+```python
+g_reg_loss = regularization_loss('generator')
+d_reg_loss = regularization_loss('discriminator')
+```
+
 ### pixel loss
 ```python
 loss = L1_loss(x, y)
