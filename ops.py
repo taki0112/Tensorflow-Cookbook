@@ -708,8 +708,8 @@ def huber_loss(x, y):
 def regularization_loss(scope_name) :
     """
     If you want to use "Regularization"
-    g_loss += regularization('generator')
-    d_loss += regularization('discriminator')
+    g_loss += regularization_loss('generator')
+    d_loss += regularization_loss('discriminator')
     """
     collection_regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
