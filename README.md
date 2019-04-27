@@ -186,6 +186,8 @@ x = self_attention_with_pooling(x, channels=64, use_bias=True, sn=True, scope='s
 x = squeeze_excitation(x, channels=64, ratio=16, use_bias=True, sn=True, scope='squeeze_excitation')
 
 x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True, scope='convolution_block_attention')
+
+x = global_context_block(x, channels=64, use_bias=True, sn=True, scope='gc_block')
 ```
 
 <div align="center">
@@ -207,6 +209,12 @@ x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True
   <img src="https://bloglunit.files.wordpress.com/2018/08/screen-shot-2018-08-22-at-8-47-09-pm.png?w=2800">
 </div>
 
+
+---
+
+<div align="center">
+  <img src=./assets/gcb.png>
+</div>
 
 ---
 
