@@ -26,7 +26,7 @@ weight_regularizer_fully = tf.contrib.layers.l2_regularizer(0.0001)
 # Layers
 ##################################################################################
 
-# padding='SAME' ======> pad = ceil[ (kernel - stride) / 2 ]
+# padding='SAME' ======> pad = floor[ (kernel - stride) / 2 ]
 def conv(x, channels, kernel=4, stride=2, pad=0, pad_type='zero', use_bias=True, sn=False, scope='conv_0'):
     with tf.variable_scope(scope):
         if pad > 0:
