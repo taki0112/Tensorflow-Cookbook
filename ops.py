@@ -959,6 +959,27 @@ def vdb_loss(mu, logvar, i_c=0.1) :
 
     return loss
 
+def simple_gp(real_logit, fake_logit, real_images, fake_images, r1_gamma=10, r2_gamma=0) :
+    # Used in StyleGAN
+
+    r1_penalty = 0
+    r2_penalty = 0
+
+    if r1_gamma != 0 :
+        real_loss = tf.reduce_sum(real_logit)
+        real_grads = tf.gradients(real_loss, real_images)[0]
+
+        r1_penalty = tf.reduce_sum(tf.square(flatten(real_grads)), axis=-1) * r1_gamma * 0.5
+
+    if r2_gamma != 0 :
+        fake_loss = tf.reduce_sum(fake_logit)
+        fake_grads = tf.gradients(fake_loss, fake_images)[0]
+
+        r2_penalty = tf.reduce_sum(tf.square(flatten(fake_grads)), axis=-1) * r2_gamma * 0.5
+
+    return r1_penalty + r2_penalty
+
+
 ##################################################################################
 # KL-Divergence Loss Function
 ##################################################################################
