@@ -789,11 +789,12 @@ def normalization(x):
     return x
 
 def gram_matrix(x) :
-    ch = x.shape[-1]
+    b, h, w, c = x.get_shape().as_list()
 
-    x = tf.reshape(x, shape=[-1, ch])
+    x = tf.reshape(x, shape=[b, -1, c])
 
-    x = tf.matmul(tf.transpose(x), x)
+    x = tf.matmul(tf.transpose(x, perm=[0, 2, 1]), x)
+    x = x / (h * w * c)
 
     return x
 
@@ -803,10 +804,10 @@ def gram_style_loss(x, y) :
     x = gram_matrix(x)
     y = gram_matrix(y)
 
-    # loss = L2_loss(x, y) # simple version
+    loss = L2_loss(x, y) # simple version
 
     # Original eqn as a constant to divide i.e 1/(4. * (channels ** 2) * (width * height) ** 2)
-    loss = tf.reduce_mean(tf.square(x - y)) / (channels ** 2 * width * height)  # (4.0 * (channels ** 2) * (width * height) ** 2)
+    # loss = tf.reduce_mean(tf.square(x - y)) / (channels ** 2 * width * height)  # (4.0 * (channels ** 2) * (width * height) ** 2)
 
     return loss
 
