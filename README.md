@@ -72,7 +72,23 @@ weight_regularizer_fully = tf.contrib.layers.l2_regularizer(0.0001)
 ```
 ### Initialization
 * `Xavier` : tf.contrib.layers.xavier_initializer()
+  ```python
+    if uniform :
+      factor = gain * gain
+      mode = 'FAN_AVG'
+    else :
+      factor = (gain * gain) / 1.3
+      mode = 'FAN_AVG'
+  ```
 * `He` : tf.contrib.layers.variance_scaling_initializer()
+  ```python
+    if uniform :
+      factor = gain * gain
+      mode='FAN_IN'
+    else :
+      factor = (gain * gain) / 1.3
+      mode = 'FAN_OUT'
+  ```
 * `Normal` : tf.random_normal_initializer(mean=0.0, stddev=0.02)
 * `Truncated_normal` : tf.truncated_normal_initializer(mean=0.0, stddev=0.02)
 * `Orthogonal` : tf.orthogonal_initializer(1.0) / # if relu = sqrt(2), the others = 1.0
