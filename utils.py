@@ -13,12 +13,12 @@ class ImageData:
 
     def image_processing(self, filename):
         x = tf.read_file(filename)
-        x_decode = tf.image.decode_jpeg(x, channels=self.channels)
+        x_decode = tf.image.decode_jpeg(x, channels=self.channels, dct_method='INTEGER_ACCURATE')
         img = tf.image.resize_images(x_decode, [self.load_size, self.load_size])
         img = tf.cast(img, tf.float32) / 127.5 - 1
 
         if self.augment_flag :
-            augment_size = self.load_size + (30 if self.load_size == 256 else 15)
+            augment_size = self.load_size + (30 if self.load_size == 256 else int(self.load_size * 0.1))
             p = random.random()
             if p > 0.5:
                 img = augmentation(img, augment_size)
@@ -248,3 +248,34 @@ def check_folder(log_dir):
 
 def str2bool(x):
     return x.lower() in ('true')
+
+def pytorch_xavier_weight_factor(gain=0.02, uniform=False) :
+
+    if uniform :
+        factor = gain * gain
+        mode = 'FAN_AVG'
+    else :
+        factor = (gain * gain) / 1.3
+        mode = 'FAN_AVG'
+
+    return factor, mode, uniform
+
+def pytorch_kaiming_weight_factor(a=0.0, activation_function='relu', uniform=False) :
+
+    if activation_function == 'relu' :
+        gain = np.sqrt(2.0)
+    elif activation_function == 'leaky_relu' :
+        gain = np.sqrt(2.0 / (1 + a ** 2))
+    elif activation_function =='tanh' :
+        gain = 5.0 / 3
+    else :
+        gain = 1.0
+
+    if uniform :
+        factor = gain * gain
+        mode = 'FAN_IN'
+    else :
+        factor = (gain * gain) / 1.3
+        mode = 'FAN_IN' # FAN_OUT is correct, but more use 'FAN_IN
+
+    return factor, mode, uniform

@@ -5,6 +5,41 @@ import numpy as np
 # Initialization
 ##################################################################################
 
+"""
+pytorch xavier (gain)
+https://pytorch.org/docs/stable/_modules/torch/nn/init.html
+
+if uniform :
+    factor = gain * gain
+    mode = 'FAN_AVG'
+else :
+    SPADE use, gain=0.02
+    factor = (gain * gain) / 1.3
+    mode = 'FAN_AVG'
+
+pytorch : trunc_stddev = gain * sqrt(2 / (fan_in + fan_out))
+tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / (fan_in + fan_out))
+
+"""
+
+"""
+pytorch kaiming (a=0)
+https://pytorch.org/docs/stable/_modules/torch/nn/init.html
+
+if uniform :
+    a = 0 -> gain = sqrt(2)
+    factor = gain * gain
+    mode='FAN_IN'
+else :
+    a = 0 -> gain = sqrt(2)
+    factor = (gain * gain) / 1.3
+    mode = 'FAN_OUT', but SPADE use 'FAN_IN'
+
+pytorch : trunc_stddev = gain * sqrt(2 / (fan_in + fan_out))
+tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / (fan_in + fan_out))
+
+"""
+
 # Xavier : tf.contrib.layers.xavier_initializer()
 # He : tf.contrib.layers.variance_scaling_initializer()
 # Normal : tf.random_normal_initializer(mean=0.0, stddev=0.02)
@@ -17,6 +52,9 @@ import numpy as np
 
 # l2_decay : tf.contrib.layers.l2_regularizer(0.0001)
 # orthogonal_regularizer : orthogonal_regularizer(0.0001) # orthogonal_regularizer_fully(0.0001)
+
+# factor, mode, uniform = pytorch_xavier_weight_factor(gain=0.02, uniform=False)
+# weight_init = tf_contrib.layers.variance_scaling_initializer(factor=factor, mode=mode, uniform=uniform)
 
 weight_init = tf.truncated_normal_initializer(mean=0.0, stddev=0.02)
 weight_regularizer = tf.contrib.layers.l2_regularizer(0.0001)
