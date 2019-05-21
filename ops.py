@@ -44,7 +44,7 @@ tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / (fan_in + fan_out))
 # He : tf.contrib.layers.variance_scaling_initializer()
 # Normal : tf.random_normal_initializer(mean=0.0, stddev=0.02)
 # Truncated_normal : tf.truncated_normal_initializer(mean=0.0, stddev=0.02)
-# Orthogonal : tf.orthogonal_initializer(1.0) / # relu = sqrt(2), the others = 1.0
+# Orthogonal : tf.orthogonal_initializer(0.02)
 
 ##################################################################################
 # Regularization
