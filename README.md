@@ -84,7 +84,7 @@ weight_regularizer_fully = tf.contrib.layers.l2_regularizer(0.0001)
   ```python
     if uniform :
       factor = gain * gain
-      mode='FAN_IN'
+      mode = 'FAN_IN'
     else :
       factor = (gain * gain) / 1.3
       mode = 'FAN_OUT'
