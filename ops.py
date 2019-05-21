@@ -6,6 +6,7 @@ import numpy as np
 ##################################################################################
 
 """
+
 pytorch xavier (gain)
 https://pytorch.org/docs/stable/_modules/torch/nn/init.html
 
@@ -13,10 +14,9 @@ if uniform :
     factor = gain * gain
     mode = 'FAN_AVG'
 else :
-    SPADE use, gain=0.02
     factor = (gain * gain) / 1.3
     mode = 'FAN_AVG'
-
+    
 pytorch : trunc_stddev = gain * sqrt(2 / (fan_in + fan_out))
 tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / (fan_in + fan_out))
 
@@ -33,8 +33,8 @@ if uniform :
 else :
     a = 0 -> gain = sqrt(2)
     factor = (gain * gain) / 1.3
-    mode = 'FAN_OUT', but SPADE use 'FAN_IN'
-
+    mode = 'FAN_OUT', # FAN_OUT is correct, but more use 'FAN_IN
+    
 pytorch : trunc_stddev = gain * sqrt(2 / (fan_in + fan_out))
 tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / (fan_in + fan_out))
 
