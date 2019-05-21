@@ -36,8 +36,8 @@ else :
     factor = (gain * gain) / 1.3
     mode = 'FAN_OUT', # FAN_OUT is correct, but more use 'FAN_IN
     
-pytorch : trunc_stddev = gain * sqrt(2 / (fan_in + fan_out))
-tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / (fan_in + fan_out))
+pytorch : trunc_stddev = gain * sqrt(2 / fan_in)
+tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / fan_in)
 
 """
 
