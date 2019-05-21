@@ -11,7 +11,7 @@ from utils import pytorch_xavier_weight_factor, pytorch_kaiming_weight_factor
 pytorch xavier (gain)
 https://pytorch.org/docs/stable/_modules/torch/nn/init.html
 
-USE """tf.contrib.layers.variance_scaling_initializer()"""
+USE tf.contrib.layers.variance_scaling_initializer()
 if uniform :
     factor = gain * gain
     mode = 'FAN_AVG'
