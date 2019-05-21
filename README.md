@@ -73,6 +73,9 @@ weight_regularizer_fully = tf.contrib.layers.l2_regularizer(0.0001)
 ### Initialization
 * `Xavier` : tf.contrib.layers.xavier_initializer()
   ```python
+  
+    USE """tf.contrib.layers.variance_scaling_initializer()"""
+    
     if uniform :
       factor = gain * gain
       mode = 'FAN_AVG'
