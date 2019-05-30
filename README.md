@@ -207,6 +207,8 @@ x = squeeze_excitation(x, channels=64, ratio=16, use_bias=True, sn=True, scope='
 x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True, scope='convolution_block_attention')
 
 x = global_context_block(x, channels=64, use_bias=True, sn=True, scope='gc_block')
+
+x = srm_block(x, channels=64, use_bias=False, is_training=is_training, scope='srm_block')
 ```
 
 <div align="center">
@@ -233,6 +235,12 @@ x = global_context_block(x, channels=64, use_bias=True, sn=True, scope='gc_block
 
 <div align="center">
   <img src=./assets/gcb.png>
+</div>
+
+---
+
+<div align="center">
+  <img src=./assets/srm.png height='450' width='600>
 </div>
 
 ---
