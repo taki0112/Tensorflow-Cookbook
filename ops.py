@@ -531,6 +531,26 @@ def global_context_block(x, channels, use_bias=True, sn=False, scope='gc_block')
 
         return x
 
+def srm_block(x, channels, use_bias=False, is_training=True, scope='srm_block'):
+    with tf.variable_scope(scope) :
+        bs, h, w, c = x.get_shape().as_list() # c = channels
+
+        x = tf.reshape(x, shape=[bs, -1, c]) # [bs, h*w, c]
+
+        x_mean, x_var = tf.nn.moments(x, axes=1, keep_dims=True) # [bs, 1, c]
+        x_std = tf.sqrt(x_var + 1e-5)
+
+        t = tf.concat([x_mean, x_std], axis=1) # [bs, 2, c]
+
+        z = tf.layers.conv1d(t, channels, kernel_size=2, strides=1, use_bias=use_bias)
+        z = batch_norm(z, is_training=is_training)
+
+        g = tf.sigmoid(z)
+
+        x = tf.reshape(x * g, shape=[bs, h, w, c])
+
+        return x
+
 
 ##################################################################################
 # Normalization
