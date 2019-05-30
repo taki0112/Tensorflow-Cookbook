@@ -240,7 +240,7 @@ x = srm_block(x, channels=64, use_bias=False, is_training=is_training, scope='sr
 ---
 
 <div align="center">
-  <img src=./assets/srm.png height='450' width='600>
+  <img src=./assets/srm.png height='350' width='500'>
 </div>
 
 ---
