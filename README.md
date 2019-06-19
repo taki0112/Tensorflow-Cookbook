@@ -367,4 +367,4 @@ loss = kl_loss(mean, logvar)
 ---
 
 ## Author
-Junho Kim
+[Junho Kim](http://bit.ly/jhkim_ai)
