@@ -1,43 +1,58 @@
 import tensorflow as tf
-from scipy import misc
 import numpy as np
 import random, os
 from tensorflow.contrib import slim
+import cv2
 
 class ImageData:
 
-    def __init__(self, load_size, channels, augment_flag):
-        self.load_size = load_size
+    def __init__(self, img_height, img_width, channels, augment_flag):
+        self.img_height = img_height
+        self.img_width = img_width
         self.channels = channels
         self.augment_flag = augment_flag
 
     def image_processing(self, filename):
         x = tf.read_file(filename)
         x_decode = tf.image.decode_jpeg(x, channels=self.channels, dct_method='INTEGER_ACCURATE')
-        img = tf.image.resize_images(x_decode, [self.load_size, self.load_size])
+        img = tf.image.resize_images(x_decode, [self.img_height, self.img_width])
         img = tf.cast(img, tf.float32) / 127.5 - 1
 
         if self.augment_flag :
-            augment_size = self.load_size + (30 if self.load_size == 256 else int(self.load_size * 0.1))
-            p = random.random()
-            if p > 0.5:
-                img = augmentation(img, augment_size)
+            augment_height = self.img_height + (30 if self.img_height == 256 else int(self.img_height * 0.1))
+            augment_width = self.img_width + (30 if self.img_width == 256 else int(self.img_width * 0.1))
+
+            img = tf.cond(pred=tf.greater_equal(tf.random_uniform(shape=[], minval=0.0, maxval=1.0), 0.5),
+                          true_fn=lambda: augmentation(img, augment_height, augment_width),
+                          false_fn=lambda: img)
 
         return img
 
-def load_test_data(image_path, size=256):
-    img = misc.imread(image_path, mode='RGB')
-    img = misc.imresize(img, [size, size])
-    img = np.expand_dims(img, axis=0)
-    img = img/127.5 - 1 # -1 ~ 1
+def load_test_image(image_path, img_width, img_height, img_channel):
+
+    if img_channel == 1 :
+        img = cv2.imread(image_path, flags=cv2.IMREAD_GRAYSCALE)
+    else :
+        img = cv2.imread(image_path, flags=cv2.IMREAD_COLOR)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    img = cv2.resize(img, dsize=(img_width, img_height))
+
+    if img_channel == 1 :
+        img = np.expand_dims(img, axis=0)
+        img = np.expand_dims(img, axis=-1)
+    else :
+        img = np.expand_dims(img, axis=0)
+
+    img = img/127.5 - 1
 
     return img
 
-def augmentation(image, augment_size):
+def augmentation(image, augment_height, augment_width):
     seed = random.randint(0, 2 ** 31 - 1)
     ori_image_shape = tf.shape(image)
     image = tf.image.random_flip_left_right(image, seed=seed)
-    image = tf.image.resize_images(image, [augment_size, augment_size])
+    image = tf.image.resize_images(image, [augment_height, augment_width])
     image = tf.random_crop(image, ori_image_shape, seed=seed)
     return image
 
@@ -45,11 +60,14 @@ def save_images(images, size, image_path):
     return imsave(inverse_transform(images), size, image_path)
 
 def inverse_transform(images):
-    return (images+1.) / 2
+    return ((images+1.) / 2) * 255.0
 
 
 def imsave(images, size, path):
-    return misc.imsave(path, merge(images, size))
+    images = merge(images, size)
+    images = cv2.cvtColor(images.astype('uint8'), cv2.COLOR_RGB2BGR)
+
+    return cv2.imwrite(path, images)
 
 def merge(images, size):
     h, w = images.shape[1], images.shape[2]
@@ -276,6 +294,6 @@ def pytorch_kaiming_weight_factor(a=0.0, activation_function='relu', uniform=Fal
         mode = 'FAN_IN'
     else :
         factor = (gain * gain) / 1.3
-        mode = 'FAN_IN' # FAN_OUT is correct, but more use 'FAN_IN
+        mode = 'FAN_IN'
 
     return factor, mode, uniform
