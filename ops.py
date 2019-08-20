@@ -18,7 +18,7 @@ if uniform :
 else :
     factor = (gain * gain) / 1.3
     mode = 'FAN_AVG'
-    
+
 pytorch : trunc_stddev = gain * sqrt(2 / (fan_in + fan_out))
 tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / (fan_in + fan_out))
 
@@ -36,7 +36,7 @@ else :
     a = 0 -> gain = sqrt(2)
     factor = (gain * gain) / 1.3
     mode = 'FAN_OUT', # FAN_OUT is correct, but more use 'FAN_IN
-    
+
 pytorch : trunc_stddev = gain * sqrt(2 / fan_in)
 tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / fan_in)
 
@@ -61,6 +61,7 @@ tensorflow  : trunc_stddev = sqrt(1.3 * factor * 2 / fan_in)
 weight_init = tf.truncated_normal_initializer(mean=0.0, stddev=0.02)
 weight_regularizer = tf.contrib.layers.l2_regularizer(0.0001)
 weight_regularizer_fully = tf.contrib.layers.l2_regularizer(0.0001)
+
 
 ##################################################################################
 # Layers
@@ -312,12 +313,13 @@ def resblock_down(x_init, channels, use_bias=True, is_training=True, sn=False, s
 
     return relu(x + x_init)
 
-def denseblock(x_init, channels, n_db=6, use_bias=True, is_training=True, sn=False, scope='denseblock') :
-    with tf.variable_scope(scope) :
+
+def denseblock(x_init, channels, n_db=6, use_bias=True, is_training=True, sn=False, scope='denseblock'):
+    with tf.variable_scope(scope):
         layers = []
         layers.append(x_init)
 
-        with tf.variable_scope('bottle_neck_0') :
+        with tf.variable_scope('bottle_neck_0'):
             x = conv(x_init, 4 * channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_0')
             x = batch_norm(x, is_training, scope='batch_norm_0')
             x = relu(x)
@@ -328,8 +330,8 @@ def denseblock(x_init, channels, n_db=6, use_bias=True, is_training=True, sn=Fal
 
             layers.append(x)
 
-        for i in range(1, n_db) :
-            with tf.variable_scope('bottle_neck_' + str(i)) :
+        for i in range(1, n_db):
+            with tf.variable_scope('bottle_neck_' + str(i)):
                 x = tf.concat(layers, axis=-1)
 
                 x = conv(x, 4 * channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_0')
@@ -347,7 +349,8 @@ def denseblock(x_init, channels, n_db=6, use_bias=True, is_training=True, sn=Fal
         return x
 
 
-def res_denseblock(x_init, channels, n_rdb=20, n_rdb_conv=6, use_bias=True, is_training=True, sn=False, scope='res_denseblock'):
+def res_denseblock(x_init, channels, n_rdb=20, n_rdb_conv=6, use_bias=True, is_training=True, sn=False,
+                   scope='res_denseblock'):
     with tf.variable_scope(scope):
         RDBs = []
         x_input = x_init
@@ -394,11 +397,11 @@ def res_denseblock(x_init, channels, n_rdb=20, n_rdb_conv=6, use_bias=True, is_t
         with tf.variable_scope('GFF_3x3'):
             x = conv(x, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn, scope='conv')
 
-
         # Global residual learning
         x = x_input + x
 
         return x
+
 
 def self_attention(x, channels, use_bias=True, sn=False, scope='self_attention'):
     with tf.variable_scope(scope):
@@ -516,7 +519,8 @@ def global_context_block(x, channels, use_bias=True, sn=False, scope='gc_block')
             context_transform = conv(context, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_0')
             context_transform = layer_norm(context_transform)
             context_transform = relu(context_transform)
-            context_transform = conv(context_transform, channels=c, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_1')
+            context_transform = conv(context_transform, channels=c, kernel=1, stride=1, use_bias=use_bias, sn=sn,
+                                     scope='conv_1')
             context_transform = sigmoid(context_transform)
 
             x = x * context_transform
@@ -525,22 +529,24 @@ def global_context_block(x, channels, use_bias=True, sn=False, scope='gc_block')
             context_transform = conv(context, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_0')
             context_transform = layer_norm(context_transform)
             context_transform = relu(context_transform)
-            context_transform = conv(context_transform, channels=c, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_1')
+            context_transform = conv(context_transform, channels=c, kernel=1, stride=1, use_bias=use_bias, sn=sn,
+                                     scope='conv_1')
 
             x = x + context_transform
 
         return x
 
+
 def srm_block(x, channels, use_bias=False, is_training=True, scope='srm_block'):
-    with tf.variable_scope(scope) :
-        bs, h, w, c = x.get_shape().as_list() # c = channels
+    with tf.variable_scope(scope):
+        bs, h, w, c = x.get_shape().as_list()  # c = channels
 
-        x = tf.reshape(x, shape=[bs, -1, c]) # [bs, h*w, c]
+        x = tf.reshape(x, shape=[bs, -1, c])  # [bs, h*w, c]
 
-        x_mean, x_var = tf.nn.moments(x, axes=1, keep_dims=True) # [bs, 1, c]
+        x_mean, x_var = tf.nn.moments(x, axes=1, keep_dims=True)  # [bs, 1, c]
         x_std = tf.sqrt(x_var + 1e-5)
 
-        t = tf.concat([x_mean, x_std], axis=1) # [bs, 2, c]
+        t = tf.concat([x_mean, x_std], axis=1)  # [bs, 2, c]
 
         z = tf.layers.conv1d(t, channels, kernel_size=2, strides=1, use_bias=use_bias)
         z = batch_norm(z, is_training=is_training)
@@ -688,8 +694,9 @@ def batch_instance_norm(x, scope='batch_instance_norm'):
 
         return x_hat
 
-def switch_norm(x, scope='switch_norm') :
-    with tf.variable_scope(scope) :
+
+def switch_norm(x, scope='switch_norm'):
+    with tf.variable_scope(scope):
         ch = x.shape[-1]
         eps = 1e-5
 
@@ -710,6 +717,7 @@ def switch_norm(x, scope='switch_norm') :
         x = x * gamma + beta
 
         return x
+
 
 ##################################################################################
 # Activation Function
@@ -738,6 +746,7 @@ def swish(x):
 
 def elu(x):
     return tf.nn.elu(x)
+
 
 ##################################################################################
 # Pooling & Resize
@@ -781,12 +790,13 @@ def hw_flatten(x):
 # Loss Function
 ##################################################################################
 
-def classification_loss(logit, label) :
+def classification_loss(logit, label):
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=label, logits=logit))
     prediction = tf.equal(tf.argmax(logit, -1), tf.argmax(label, -1))
     accuracy = tf.reduce_mean(tf.cast(prediction, tf.float32))
 
     return loss, accuracy
+
 
 def L1_loss(x, y):
     loss = tf.reduce_mean(tf.abs(x - y))
@@ -803,7 +813,8 @@ def L2_loss(x, y):
 def huber_loss(x, y):
     return tf.losses.huber_loss(x, y)
 
-def regularization_loss(scope_name) :
+
+def regularization_loss(scope_name):
     """
     If you want to use "Regularization"
     g_loss += regularization_loss('generator')
@@ -812,11 +823,12 @@ def regularization_loss(scope_name) :
     collection_regularization = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
 
     loss = []
-    for item in collection_regularization :
-        if scope_name in item.name :
+    for item in collection_regularization:
+        if scope_name in item.name:
             loss.append(item)
 
     return tf.reduce_sum(loss)
+
 
 def histogram_loss(x, y):
     histogram_x = get_histogram(x)
@@ -825,6 +837,7 @@ def histogram_loss(x, y):
     hist_loss = L1_loss(histogram_x, histogram_y)
 
     return hist_loss
+
 
 def get_histogram(img, bin_size=0.2):
     hist_entries = []
@@ -848,7 +861,8 @@ def normalization(x):
     x = (x - tf.reduce_min(x)) / (tf.reduce_max(x) - tf.reduce_min(x))
     return x
 
-def gram_matrix(x) :
+
+def gram_matrix(x):
     b, h, w, c = x.get_shape().as_list()
 
     x = tf.reshape(x, shape=[b, -1, c])
@@ -858,26 +872,29 @@ def gram_matrix(x) :
 
     return x
 
-def gram_style_loss(x, y) :
+
+def gram_style_loss(x, y):
     _, height, width, channels = x.get_shape().as_list()
 
     x = gram_matrix(x)
     y = gram_matrix(y)
 
-    loss = L2_loss(x, y) # simple version
+    loss = L2_loss(x, y)  # simple version
 
     # Original eqn as a constant to divide i.e 1/(4. * (channels ** 2) * (width * height) ** 2)
     # loss = tf.reduce_mean(tf.square(x - y)) / (channels ** 2 * width * height)  # (4.0 * (channels ** 2) * (width * height) ** 2)
 
     return loss
 
-def color_consistency_loss(x, y) :
+
+def color_consistency_loss(x, y):
     x_mu, x_var = tf.nn.moments(x, axes=[1, 2], keep_dims=True)
     y_mu, y_var = tf.nn.moments(y, axes=[1, 2], keep_dims=True)
 
     loss = L2_loss(x_mu, y_mu) + 5.0 * L2_loss(x_var, y_var)
 
     return loss
+
 
 def dice_loss(n_classes, logits, labels):
     """
@@ -1012,7 +1029,8 @@ def generator_loss(Ra, loss_func, real, fake):
 
     return loss
 
-def vdb_loss(mu, logvar, i_c=0.1) :
+
+def vdb_loss(mu, logvar, i_c=0.1):
     # variational discriminator bottleneck loss
     kl_divergence = 0.5 * tf.reduce_sum(tf.square(mu) + tf.exp(logvar) - 1 - logvar, axis=-1)
 
@@ -1020,20 +1038,21 @@ def vdb_loss(mu, logvar, i_c=0.1) :
 
     return loss
 
-def simple_gp(real_logit, fake_logit, real_images, fake_images, r1_gamma=10, r2_gamma=0) :
+
+def simple_gp(real_logit, fake_logit, real_images, fake_images, r1_gamma=10, r2_gamma=0):
     # Used in StyleGAN
 
     r1_penalty = 0
     r2_penalty = 0
 
-    if r1_gamma != 0 :
-        real_loss = tf.reduce_sum(real_logit) # In some cases, you may use reduce_mean
+    if r1_gamma != 0:
+        real_loss = tf.reduce_sum(real_logit)  # In some cases, you may use reduce_mean
         real_grads = tf.gradients(real_loss, real_images)[0]
 
         r1_penalty = 0.5 * r1_gamma * tf.reduce_mean(tf.reduce_sum(tf.square(real_grads), axis=[1, 2, 3]))
 
-    if r2_gamma != 0 :
-        fake_loss = tf.reduce_sum(fake_logit) # In some cases, you may use reduce_mean
+    if r2_gamma != 0:
+        fake_loss = tf.reduce_sum(fake_logit)  # In some cases, you may use reduce_mean
         fake_grads = tf.gradients(fake_loss, fake_images)[0]
 
         r2_penalty = 0.5 * r2_gamma * tf.reduce_mean(tf.reduce_sum(tf.square(fake_grads), axis=[1, 2, 3]))
@@ -1061,15 +1080,15 @@ def kl_loss(mean, logvar):
 
 
 # version 2
-def z_sample_2(mean, var):
+def z_sample_2(mean, sigma):
     eps = tf.random_normal(tf.shape(mean), mean=0.0, stddev=1.0, dtype=tf.float32)
 
-    return mean + var * eps
+    return mean + sigma * eps
 
 
-def kl_loss_2(mean, var):
+def kl_loss_2(mean, sigma):
     # shape : [batch_size, channel]
-    loss = 0.5 * tf.reduce_sum(tf.square(mean) + tf.square(var) - tf.log(1e-8 + tf.square(var)) - 1, axis=-1)
+    loss = 0.5 * tf.reduce_sum(tf.square(mean) + tf.square(sigma) - tf.log(1e-8 + tf.square(sigma)) - 1, axis=-1)
     loss = tf.reduce_mean(loss)
 
     return loss
