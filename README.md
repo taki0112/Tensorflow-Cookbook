@@ -255,11 +255,13 @@ x = group_norm(x, groups=32, scope='group_norm')
 x = pixel_norm(x)
 
 x = batch_instance_norm(x, scope='batch_instance_norm')
+x = layer_instance_norm(x, scope='layer_instance_norm')
 x = switch_norm(x, scope='switch_norm')
 
 x = condition_batch_norm(x, z, is_training=is_training, scope='condition_batch_norm'):
 
 x = adaptive_instance_norm(x, gamma, beta)
+x = adaptive_layer_instance_norm(x, gamma, beta, smoothing=True, scope='adaLIN')
 
 ```
 * See [this](https://github.com/taki0112/BigGAN-Tensorflow) for how to use `condition_batch_norm`
@@ -290,7 +292,10 @@ x = elu(x)
 
 ## Pooling & Resize
 ```python
-x = up_sample(x, scale_factor=2)
+x = nearest_up_sample(x, scale_factor=2)
+x = bilinear_up_sample(x, scale_factor=2)
+x = nearest_down_sample(x, scale_factor=2)
+x = bilinear_down_sample(x, scale_factor=2)
 
 x = max_pooling(x, pool_size=2)
 x = avg_pooling(x, pool_size=2)
