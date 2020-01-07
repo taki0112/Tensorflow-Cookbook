@@ -266,6 +266,7 @@ x = adaptive_layer_instance_norm(x, gamma, beta, smoothing=True, scope='adaLIN')
 ```
 * See [this](https://github.com/taki0112/BigGAN-Tensorflow) for how to use `condition_batch_norm`
 * See [this](https://github.com/taki0112/MUNIT-Tensorflow) for how to use `adaptive_instance_norm`
+* See [this](https://github.com/taki0112/UGATIT) for how to use `adaptive_layer_instance_norm` & `layer_instance_norm`
 
 <div align="center">
   <img src="https://github.com/taki0112/Group_Normalization-Tensorflow/raw/master/assests/norm.png">
