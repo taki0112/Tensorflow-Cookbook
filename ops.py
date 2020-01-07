@@ -608,40 +608,30 @@ def adaptive_instance_norm(content, gamma, beta, epsilon=1e-5):
 
     return gamma * ((content - c_mean) / c_std) + beta
 
+def adaptive_layer_instance_norm(x, gamma, beta, smoothing=True, scope='ada_layer_instance_norm') :
+    # proposed by UGATIT
+    # https://github.com/taki0112/UGATIT
+    with tf.variable_scope(scope):
+        ch = x.shape[-1]
+        eps = 1e-5
 
-def pixel_norm(x, epsilon=1e-8):
-    return x * tf.rsqrt(tf.reduce_mean(tf.square(x), axis=-1, keepdims=True) + epsilon)
+        ins_mean, ins_sigma = tf.nn.moments(x, axes=[1, 2], keep_dims=True)
+        x_ins = (x - ins_mean) / (tf.sqrt(ins_sigma + eps))
+
+        ln_mean, ln_sigma = tf.nn.moments(x, axes=[1, 2, 3], keep_dims=True)
+        x_ln = (x - ln_mean) / (tf.sqrt(ln_sigma + eps))
+
+        rho = tf.get_variable("rho", [ch], initializer=tf.constant_initializer(1.0), constraint=lambda x: tf.clip_by_value(x, clip_value_min=0.0, clip_value_max=1.0))
+
+        if smoothing :
+            rho = tf.clip_by_value(rho - tf.constant(0.1), 0.0, 1.0)
+
+        x_hat = rho * x_ins + (1 - rho) * x_ln
 
 
-def spectral_norm(w, iteration=1):
-    w_shape = w.shape.as_list()
-    w = tf.reshape(w, [-1, w_shape[-1]])
+        x_hat = x_hat * gamma + beta
 
-    u = tf.get_variable("u", [1, w_shape[-1]], initializer=tf.random_normal_initializer(), trainable=False)
-
-    u_hat = u
-    v_hat = None
-    for i in range(iteration):
-        """
-        power iteration
-        Usually iteration = 1 will be enough
-        """
-        v_ = tf.matmul(u_hat, tf.transpose(w))
-        v_hat = tf.nn.l2_normalize(v_)
-
-        u_ = tf.matmul(v_hat, w)
-        u_hat = tf.nn.l2_normalize(u_)
-
-    u_hat = tf.stop_gradient(u_hat)
-    v_hat = tf.stop_gradient(v_hat)
-
-    sigma = tf.matmul(tf.matmul(v_hat, w), tf.transpose(u_hat))
-
-    with tf.control_dependencies([u.assign(u_hat)]):
-        w_norm = w / sigma
-        w_norm = tf.reshape(w_norm, w_shape)
-
-    return w_norm
+        return x_hat
 
 
 def condition_batch_norm(x, z, is_training=True, scope='batch_norm'):
@@ -684,8 +674,7 @@ def batch_instance_norm(x, scope='batch_instance_norm'):
         ins_mean, ins_sigma = tf.nn.moments(x, axes=[1, 2], keep_dims=True)
         x_ins = (x - ins_mean) / (tf.sqrt(ins_sigma + eps))
 
-        rho = tf.get_variable("rho", [ch], initializer=tf.constant_initializer(1.0),
-                              constraint=lambda x: tf.clip_by_value(x, clip_value_min=0.0, clip_value_max=1.0))
+        rho = tf.get_variable("rho", [ch], initializer=tf.constant_initializer(1.0), constraint=lambda x: tf.clip_by_value(x, clip_value_min=0.0, clip_value_max=1.0))
         gamma = tf.get_variable("gamma", [ch], initializer=tf.constant_initializer(1.0))
         beta = tf.get_variable("beta", [ch], initializer=tf.constant_initializer(0.0))
 
@@ -694,6 +683,32 @@ def batch_instance_norm(x, scope='batch_instance_norm'):
 
         return x_hat
 
+def layer_instance_norm(x, scope='layer_instance_norm') :
+    # proposed by UGATIT
+    # https://github.com/taki0112/UGATIT
+    with tf.variable_scope(scope):
+        ch = x.shape[-1]
+        eps = 1e-5
+
+        ins_mean, ins_sigma = tf.nn.moments(x, axes=[1, 2], keep_dims=True)
+        x_ins = (x - ins_mean) / (tf.sqrt(ins_sigma + eps))
+
+        ln_mean, ln_sigma = tf.nn.moments(x, axes=[1, 2, 3], keep_dims=True)
+        x_ln = (x - ln_mean) / (tf.sqrt(ln_sigma + eps))
+
+        rho = tf.get_variable("rho", [ch], initializer=tf.constant_initializer(0.0), constraint=lambda x: tf.clip_by_value(x, clip_value_min=0.0, clip_value_max=1.0))
+
+        gamma = tf.get_variable("gamma", [ch], initializer=tf.constant_initializer(1.0))
+        beta = tf.get_variable("beta", [ch], initializer=tf.constant_initializer(0.0))
+
+        x_hat = rho * x_ins + (1 - rho) * x_ln
+
+        x_hat = x_hat * gamma + beta
+
+        return x_hat
+
+def pixel_norm(x, epsilon=1e-8):
+    return x * tf.rsqrt(tf.reduce_mean(tf.square(x), axis=-1, keepdims=True) + epsilon)
 
 def switch_norm(x, scope='switch_norm'):
     with tf.variable_scope(scope):
@@ -718,6 +733,35 @@ def switch_norm(x, scope='switch_norm'):
 
         return x
 
+def spectral_norm(w, iteration=1):
+    w_shape = w.shape.as_list()
+    w = tf.reshape(w, [-1, w_shape[-1]])
+
+    u = tf.get_variable("u", [1, w_shape[-1]], initializer=tf.random_normal_initializer(), trainable=False)
+
+    u_hat = u
+    v_hat = None
+    for i in range(iteration):
+        """
+        power iteration
+        Usually iteration = 1 will be enough
+        """
+        v_ = tf.matmul(u_hat, tf.transpose(w))
+        v_hat = tf.nn.l2_normalize(v_)
+
+        u_ = tf.matmul(v_hat, w)
+        u_hat = tf.nn.l2_normalize(u_)
+
+    u_hat = tf.stop_gradient(u_hat)
+    v_hat = tf.stop_gradient(v_hat)
+
+    sigma = tf.matmul(tf.matmul(v_hat, w), tf.transpose(u_hat))
+
+    with tf.control_dependencies([u.assign(u_hat)]):
+        w_norm = w / sigma
+        w_norm = tf.reshape(w_norm, w_shape)
+
+    return w_norm
 
 ##################################################################################
 # Activation Function
@@ -752,11 +796,25 @@ def elu(x):
 # Pooling & Resize
 ##################################################################################
 
-def up_sample(x, scale_factor=2):
+def nearest_up_sample(x, scale_factor=2):
     _, h, w, _ = x.get_shape().as_list()
     new_size = [h * scale_factor, w * scale_factor]
     return tf.image.resize_nearest_neighbor(x, size=new_size)
 
+def bilinear_up_sample(x, scale_factor=2):
+    _, h, w, _ = x.get_shape().as_list()
+    new_size = [h * scale_factor, w * scale_factor]
+    return tf.image.resize_bilinear(x, size=new_size)
+
+def nearest_down_sample(x, scale_factor=2):
+    _, h, w, _ = x.get_shape().as_list()
+    new_size = [h // scale_factor, w // scale_factor]
+    return tf.image.resize_nearest_neighbor(x, size=new_size)
+
+def bilinear_down_sample(x, scale_factor=2):
+    _, h, w, _ = x.get_shape().as_list()
+    new_size = [h // scale_factor, w // scale_factor]
+    return tf.image.resize_bilinear(x, size=new_size)
 
 def global_avg_pooling(x):
     gap = tf.reduce_mean(x, axis=[1, 2], keepdims=True)
