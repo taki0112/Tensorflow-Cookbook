@@ -994,94 +994,117 @@ def dice_loss(n_classes, logits, labels):
 # GAN Loss Function
 ##################################################################################
 
-def discriminator_loss(Ra, loss_func, real, fake):
+def discriminator_loss(Ra, gan_type, real, fake):
     # Ra = Relativistic
     real_loss = 0
     fake_loss = 0
 
-    if Ra and loss_func.__contains__('wgan'):
-        print("No exist [Ra + WGAN], so use the {} loss function".format(loss_func))
+    if Ra and (gan_type.__contains__('wgan') or gan_type == 'sphere'):
+        print("No exist [Ra + WGAN or Ra + Sphere], so use the {} loss function".format(gan_type))
         Ra = False
 
     if Ra:
         real_logit = (real - tf.reduce_mean(fake))
         fake_logit = (fake - tf.reduce_mean(real))
 
-        if loss_func == 'lsgan':
+        if gan_type == 'lsgan':
             real_loss = tf.reduce_mean(tf.square(real_logit - 1.0))
             fake_loss = tf.reduce_mean(tf.square(fake_logit + 1.0))
 
-        if loss_func == 'gan' or loss_func == 'gan-gp' or loss_func == 'dragan':
+        if gan_type == 'gan' or gan_type == 'gan-gp' or gan_type == 'dragan':
             real_loss = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=tf.ones_like(real), logits=real_logit))
             fake_loss = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=tf.zeros_like(fake), logits=fake_logit))
 
-        if loss_func == 'hinge':
+        if gan_type == 'hinge':
             real_loss = tf.reduce_mean(relu(1.0 - real_logit))
             fake_loss = tf.reduce_mean(relu(1.0 + fake_logit))
 
     else:
-        if loss_func.__contains__('wgan'):
+        if gan_type.__contains__('wgan'):
             real_loss = -tf.reduce_mean(real)
             fake_loss = tf.reduce_mean(fake)
 
-        if loss_func == 'lsgan':
+        if gan_type == 'lsgan':
             real_loss = tf.reduce_mean(tf.square(real - 1.0))
             fake_loss = tf.reduce_mean(tf.square(fake))
 
-        if loss_func == 'gan' or loss_func == 'gan-gp' or loss_func == 'dragan':
+        if gan_type == 'gan' or gan_type == 'gan-gp' or gan_type == 'dragan':
             real_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=tf.ones_like(real), logits=real))
             fake_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=tf.zeros_like(fake), logits=fake))
 
-        if loss_func == 'hinge':
+        if gan_type == 'hinge':
             real_loss = tf.reduce_mean(relu(1.0 - real))
             fake_loss = tf.reduce_mean(relu(1.0 + fake))
+
+        if gan_type == 'sphere':
+            bs, c = real.get_shape().as_list()
+            moment = 3
+            north_pole = tf.one_hot(tf.tile([c], multiples=[bs]), depth=c + 1)  # [bs, c+1] -> [0, 0, 0, ... , 1]
+
+            real_projection = inverse_stereographic_projection(real)
+            fake_projection = inverse_stereographic_projection(fake)
+
+            for i in range(1, moment + 1):
+                real_loss += -tf.reduce_mean(tf.pow(sphere_loss(real_projection, north_pole), i))
+                fake_loss += tf.reduce_mean(tf.pow(sphere_loss(fake_projection, north_pole), i))
+
 
     loss = real_loss + fake_loss
 
     return loss
 
 
-def generator_loss(Ra, loss_func, real, fake):
+def generator_loss(Ra, gan_type, real, fake):
     # Ra = Relativistic
     fake_loss = 0
     real_loss = 0
 
-    if Ra and loss_func.__contains__('wgan'):
-        print("No exist [Ra + WGAN], so use the {} loss function".format(loss_func))
+    if Ra and (gan_type.__contains__('wgan') or gan_type == 'sphere'):
+        print("No exist [Ra + WGAN or Ra + Sphere], so use the {} loss function".format(gan_type))
         Ra = False
 
     if Ra:
         fake_logit = (fake - tf.reduce_mean(real))
         real_logit = (real - tf.reduce_mean(fake))
 
-        if loss_func == 'lsgan':
+        if gan_type == 'lsgan':
             fake_loss = tf.reduce_mean(tf.square(fake_logit - 1.0))
             real_loss = tf.reduce_mean(tf.square(real_logit + 1.0))
 
-        if loss_func == 'gan' or loss_func == 'gan-gp' or loss_func == 'dragan':
+        if gan_type == 'gan' or gan_type == 'gan-gp' or gan_type == 'dragan':
             fake_loss = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=tf.ones_like(fake), logits=fake_logit))
             real_loss = tf.reduce_mean(
                 tf.nn.sigmoid_cross_entropy_with_logits(labels=tf.zeros_like(real), logits=real_logit))
 
-        if loss_func == 'hinge':
+        if gan_type == 'hinge':
             fake_loss = tf.reduce_mean(relu(1.0 - fake_logit))
             real_loss = tf.reduce_mean(relu(1.0 + real_logit))
 
     else:
-        if loss_func.__contains__('wgan'):
+        if gan_type.__contains__('wgan'):
             fake_loss = -tf.reduce_mean(fake)
 
-        if loss_func == 'lsgan':
+        if gan_type == 'lsgan':
             fake_loss = tf.reduce_mean(tf.square(fake - 1.0))
 
-        if loss_func == 'gan' or loss_func == 'gan-gp' or loss_func == 'dragan':
+        if gan_type == 'gan' or gan_type == 'gan-gp' or gan_type == 'dragan':
             fake_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=tf.ones_like(fake), logits=fake))
 
-        if loss_func == 'hinge':
+        if gan_type == 'hinge':
             fake_loss = -tf.reduce_mean(fake)
+
+        if gan_type == 'sphere':
+            bs, c = real.get_shape().as_list()
+            moment = 3
+            north_pole = tf.one_hot(tf.tile([c], multiples=[bs]), depth=c + 1)  # [bs, c+1] -> [0, 0, 0, ... , 1]
+
+            fake_projection = inverse_stereographic_projection(fake)
+
+            for i in range(1, moment + 1):
+                fake_loss += -tf.reduce_mean(tf.pow(sphere_loss(fake_projection, north_pole), i))
 
     loss = fake_loss + real_loss
 
@@ -1117,6 +1140,20 @@ def simple_gp(real_logit, fake_logit, real_images, fake_images, r1_gamma=10, r2_
 
     return r1_penalty + r2_penalty
 
+def inverse_stereographic_projection(x) :
+
+    x_u = tf.transpose(2 * x) / (tf.pow(tf.norm(x, axis=-1), 2) + 1.0)
+    x_v = (tf.pow(tf.norm(x, axis=-1), 2) - 1.0) / (tf.pow(tf.norm(x, axis=-1), 2) + 1.0)
+
+    x_projection = tf.transpose(tf.concat([x_u, [x_v]], axis=0))
+
+    return x_projection
+
+def sphere_loss(x, y) :
+
+    loss = tf.math.acos(tf.matmul(x, tf.transpose(y)))
+
+    return loss
 
 ##################################################################################
 # KL-Divergence Loss Function
