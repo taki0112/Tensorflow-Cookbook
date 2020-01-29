@@ -4,6 +4,8 @@
 
 
 # [Web page](http://bit.ly/jhkim_tf_cookbook)
+# [Tensorflow 2 Cookbook](https://github.com/taki0112/Tensorflow2-Cookbook)
+
 ## Contributions
 In now, this repo contains general architectures and functions that are useful for the GAN and classificstion.
 
