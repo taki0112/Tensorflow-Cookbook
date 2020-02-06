@@ -146,7 +146,7 @@ x = fully_connected(x, units=64, use_bias=True, sn=True, scope='fully_connected'
 ```
 
 <div align="center">
-  <img src="https://stanford.edu/~shervine/images/fully-connected.png">
+  <img src="https://stanford.edu/~shervine/teaching/cs-230/illustrations/fully-connected.png">
 </div>
 
 ---
