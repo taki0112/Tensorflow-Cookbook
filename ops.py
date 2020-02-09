@@ -259,6 +259,11 @@ def resblock(x_init, channels, use_bias=True, is_training=True, sn=False, scope=
             x = conv(x, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn)
             x = batch_norm(x, is_training)
 
+        if channels != x_init.shape[-1]:
+            with tf.variable_scope('skip'):
+                x_init = conv(x_init, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn)
+                return relu(x + x_init)
+
         return x + x_init
 
 
@@ -385,7 +390,11 @@ def res_denseblock(x_init, channels, n_rdb=20, n_rdb_conv=6, use_bias=True, is_t
                 x = conv(x, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='conv_last')
 
                 # Local residual learning
-                x = x_init + x
+                if channels != x_init.shape[-1] :
+                    x_init = conv(x_init, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='local_skip_conv')
+                    x = relu(x + x_init)
+                else :
+                    x = x_init + x
 
                 RDBs.append(x)
                 x_init = x
@@ -398,13 +407,18 @@ def res_denseblock(x_init, channels, n_rdb=20, n_rdb_conv=6, use_bias=True, is_t
             x = conv(x, channels, kernel=3, stride=1, pad=1, use_bias=use_bias, sn=sn, scope='conv')
 
         # Global residual learning
-        x = x_input + x
+        if channels != x_input.shape[-1]:
+            x_input = conv(x_input, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='global_skip_conv')
+            x = relu(x + x_input)
+        else :
+            x = x_input + x
 
         return x
 
 
-def self_attention(x, channels, use_bias=True, sn=False, scope='self_attention'):
+def self_attention(x, use_bias=True, sn=False, scope='self_attention'):
     with tf.variable_scope(scope):
+        channels = x.shape[-1]
         f = conv(x, channels // 8, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='f_conv')  # [bs, h, w, c']
         g = conv(x, channels // 8, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='g_conv')  # [bs, h, w, c']
         h = conv(x, channels, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='h_conv')  # [bs, h, w, c]
@@ -423,8 +437,9 @@ def self_attention(x, channels, use_bias=True, sn=False, scope='self_attention')
     return x
 
 
-def self_attention_with_pooling(x, channels, use_bias=True, sn=False, scope='self_attention'):
+def self_attention_with_pooling(x, use_bias=True, sn=False, scope='self_attention'):
     with tf.variable_scope(scope):
+        channels = x.shape[-1]
         f = conv(x, channels // 8, kernel=1, stride=1, use_bias=use_bias, sn=sn, scope='f_conv')  # [bs, h, w, c']
         f = max_pooling(f)
 
@@ -448,8 +463,9 @@ def self_attention_with_pooling(x, channels, use_bias=True, sn=False, scope='sel
     return x
 
 
-def squeeze_excitation(x, channels, ratio=16, use_bias=True, sn=False, scope='senet'):
+def squeeze_excitation(x, ratio=16, use_bias=True, sn=False, scope='senet'):
     with tf.variable_scope(scope):
+        channels = x.shape[-1]
         squeeze = global_avg_pooling(x)
 
         excitation = fully_connected(squeeze, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
@@ -464,8 +480,9 @@ def squeeze_excitation(x, channels, ratio=16, use_bias=True, sn=False, scope='se
         return scale
 
 
-def convolution_block_attention(x, channels, ratio=16, use_bias=True, sn=False, scope='cbam'):
+def convolution_block_attention(x, ratio=16, use_bias=True, sn=False, scope='cbam'):
     with tf.variable_scope(scope):
+        channels = x.shape[-1]
         with tf.variable_scope('channel_attention'):
             x_gap = global_avg_pooling(x)
             x_gap = fully_connected(x_gap, units=channels // ratio, use_bias=use_bias, sn=sn, scope='fc1')
@@ -488,8 +505,7 @@ def convolution_block_attention(x, channels, ratio=16, use_bias=True, sn=False, 
             x_channel_max_pooling = tf.reduce_max(x, axis=-1, keepdims=True)
             scale = tf.concat([x_channel_avg_pooling, x_channel_max_pooling], axis=-1)
 
-            scale = conv(scale, channels=1, kernel=7, stride=1, pad=3, pad_type='reflect', use_bias=False, sn=sn,
-                         scope='conv')
+            scale = conv(scale, channels=1, kernel=7, stride=1, pad=3, pad_type='reflect', use_bias=False, sn=sn, scope='conv')
             scale = sigmoid(scale)
 
             x = x * scale
@@ -497,8 +513,9 @@ def convolution_block_attention(x, channels, ratio=16, use_bias=True, sn=False, 
             return x
 
 
-def global_context_block(x, channels, use_bias=True, sn=False, scope='gc_block'):
+def global_context_block(x, use_bias=True, sn=False, scope='gc_block'):
     with tf.variable_scope(scope):
+        channels = x.shape[-1]
         with tf.variable_scope('context_modeling'):
             bs, h, w, c = x.get_shape().as_list()
             input_x = x
@@ -537,11 +554,11 @@ def global_context_block(x, channels, use_bias=True, sn=False, scope='gc_block')
         return x
 
 
-def srm_block(x, channels, use_bias=False, is_training=True, scope='srm_block'):
+def srm_block(x, use_bias=False, is_training=True, scope='srm_block'):
     with tf.variable_scope(scope):
-        bs, h, w, c = x.get_shape().as_list()  # c = channels
+        bs, h, w, channels = x.get_shape().as_list()  # c = channels
 
-        x = tf.reshape(x, shape=[bs, -1, c])  # [bs, h*w, c]
+        x = tf.reshape(x, shape=[bs, -1, channels])  # [bs, h*w, c]
 
         x_mean, x_var = tf.nn.moments(x, axes=1, keep_dims=True)  # [bs, 1, c]
         x_std = tf.sqrt(x_var + 1e-5)
@@ -553,7 +570,7 @@ def srm_block(x, channels, use_bias=False, is_training=True, scope='srm_block'):
 
         g = tf.sigmoid(z)
 
-        x = tf.reshape(x * g, shape=[bs, h, w, c])
+        x = tf.reshape(x * g, shape=[bs, h, w, channels])
 
         return x
 
