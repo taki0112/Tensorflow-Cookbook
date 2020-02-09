@@ -201,16 +201,16 @@ x = res_denseblock(x, channels=64, n_rdb=20, n_rdb_conv=6, is_training=is_traini
 
 ### attention block
 ```python
-x = self_attention(x, channels=64, use_bias=True, sn=True, scope='self_attention')
-x = self_attention_with_pooling(x, channels=64, use_bias=True, sn=True, scope='self_attention_version_2')
+x = self_attention(x, use_bias=True, sn=True, scope='self_attention')
+x = self_attention_with_pooling(x, use_bias=True, sn=True, scope='self_attention_version_2')
 
-x = squeeze_excitation(x, channels=64, ratio=16, use_bias=True, sn=True, scope='squeeze_excitation')
+x = squeeze_excitation(x, ratio=16, use_bias=True, sn=True, scope='squeeze_excitation')
 
-x = convolution_block_attention(x, channels=64, ratio=16, use_bias=True, sn=True, scope='convolution_block_attention')
+x = convolution_block_attention(x, ratio=16, use_bias=True, sn=True, scope='convolution_block_attention')
 
-x = global_context_block(x, channels=64, use_bias=True, sn=True, scope='gc_block')
+x = global_context_block(x, use_bias=True, sn=True, scope='gc_block')
 
-x = srm_block(x, channels=64, use_bias=False, is_training=is_training, scope='srm_block')
+x = srm_block(x, use_bias=False, is_training=is_training, scope='srm_block')
 ```
 
 <div align="center">
